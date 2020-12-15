@@ -1,9 +1,13 @@
 package main
 
 import (
-	"search_engine/cmd"
+	"fmt"
+	"search_engine/crawler"
 )
 
 func main() {
-	cmd.Execute()
+	quotes := crawler.Run(100)
+	for _, quote := range quotes {
+		fmt.Println(quote.Content)
+	}
 }
