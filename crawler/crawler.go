@@ -3,8 +3,10 @@ package crawler
 import (
 	"fmt"
 	"regexp"
+	"time"
 
 	"github.com/gocolly/colly"
+	"github.com/olivere/elastic"
 )
 
 var (
@@ -14,8 +16,10 @@ var (
 
 // Quote type
 type Quote struct {
-	Content string
-	Author  string
+	Content string                `json:"content"`
+	Author  string                `json:"author"`
+	Created time.Time             `json:"created,omitempty"`
+	Suggest *elastic.SuggestField `json:"suggest_field,omitempty"`
 }
 
 // Run crawler
