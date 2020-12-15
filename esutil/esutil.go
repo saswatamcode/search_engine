@@ -1,4 +1,4 @@
-package store
+package esutil
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 	"github.com/olivere/elastic"
 )
 
+// CreateClient provides es client
 func CreateClient() (*elastic.Client, context.Context) {
 	ctx := context.Background()
 
@@ -26,6 +27,7 @@ func CreateClient() (*elastic.Client, context.Context) {
 	return client, ctx
 }
 
+// CreateIndex creates index given name and mapping
 func CreateIndex(ctx context.Context, es *elastic.Client, indexName string, mapping string) {
 	exists, err := es.IndexExists(indexName).Do(ctx)
 	if err != nil {
@@ -42,6 +44,7 @@ func CreateIndex(ctx context.Context, es *elastic.Client, indexName string, mapp
 	}
 }
 
+// IndexQuote indexes a Quote
 func IndexQuote(ctx context.Context, es *elastic.Client, indexName string, typeName string, id int, quote crawler.Quote) {
 	put, err := es.Index().
 		Index(indexName).
@@ -52,5 +55,5 @@ func IndexQuote(ctx context.Context, es *elastic.Client, indexName string, typeN
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("Indexed tweet %s to index %s, type %s\n", put.Id, put.Index, put.Type)
+	fmt.Printf("Indexed quote %s to index %s, type %s\n", put.Id, put.Index, put.Type)
 }

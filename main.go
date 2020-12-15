@@ -1,28 +1,77 @@
 package main
 
 import (
-	"context"
 	"fmt"
-
-	"github.com/olivere/elastic"
+	"search_engine/crawler"
+	"search_engine/esutil"
 )
 
+const mapping = `
+{
+	"settings": {
+		"number_of_shards": 1,
+		"number_of_replicas": 0,
+		"analysis": {
+			"analyzer": {
+				"my_analyzer": { 
+					"type":"custom",
+					"tokenizer":"standard",
+					"filter": [
+						"lowercase"
+					]
+				},
+            	"my_stop_analyzer": { 
+               		"type":"custom",
+               		"tokenizer":"standard",
+               		"filter": [
+                  		"lowercase",
+                  		"english_stop"
+               		]
+            	}
+         	},
+         	"filter": {
+            	"english_stop": {
+               		"type":"stop",
+               		"stopwords":"_english_"
+            	}
+         	}
+      	}
+   },
+	"mappings": {
+		"properties": {
+			"quote": {
+				"properties": {
+					"author": {
+						"type":"keyword"
+					},
+					"content": {
+						"type":"text",
+						"analyzer":"my_analyzer", 
+            			"search_analyzer":"my_stop_analyzer", 
+             			"search_quote_analyzer":"my_analyzer" 
+					},
+					"created": {
+						"type":"date"
+					},
+					"suggest_field": {
+						"type":"completion"
+					}
+				}
+			}
+		}
+	}
+}`
+
+const name = "quotes"
+
 func main() {
-	// quotes := crawler.Run(100)
-	// for _, quote := range quotes {
-	// 	fmt.Println(quote.Content)
-	// }
-	ctx := context.Background()
+	quotes := crawler.Run(100)
 
-	client, err := elastic.NewClient()
-	if err != nil {
-		panic(err)
-	}
+	client, ctx := esutil.CreateClient()
+	esutil.CreateIndex(ctx, client, name, mapping)
 
-	info, code, err := client.Ping("http://127.0.0.1:9200").Do(ctx)
-	if err != nil {
-		// Handle error
-		panic(err)
+	for i, quote := range quotes {
+		esutil.IndexQuote(ctx, client, "quotes_index", "quote", i, quote)
+		fmt.Println(quote.Content)
 	}
-	fmt.Printf("Elasticsearch returned with code %d and version %s\n", code, info.Version.Number)
 }
