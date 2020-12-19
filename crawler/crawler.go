@@ -41,6 +41,7 @@ func Run(amount int) []Quote {
 		quotes = append(quotes, Quote{
 			Content: res[0][0],
 			Author:  e.ChildText(".authorOrTitle"),
+			Created: time.Now(),
 		})
 	})
 

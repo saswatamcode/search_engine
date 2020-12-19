@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"search_engine/crawler"
 	"search_engine/esutil"
 )
@@ -65,13 +64,10 @@ const mapping = `
 const name = "quotes"
 
 func main() {
-	quotes := crawler.Run(100)
+	quotes := crawler.Run(50)
 
 	client, ctx := esutil.CreateClient()
 	esutil.CreateIndex(ctx, client, name, mapping)
 
-	for i, quote := range quotes {
-		esutil.IndexQuote(ctx, client, "quotes_index", "quote", i, quote)
-		fmt.Println(quote.Content)
-	}
+	esutil.BulkIndexQuotes(ctx, client, "quotes_index", quotes)
 }

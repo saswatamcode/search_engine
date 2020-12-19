@@ -3,6 +3,7 @@ package esutil
 import (
 	"context"
 	"fmt"
+	"log"
 	"search_engine/crawler"
 	"strconv"
 
@@ -56,4 +57,26 @@ func IndexQuote(ctx context.Context, es *elastic.Client, indexName string, typeN
 		panic(err)
 	}
 	fmt.Printf("Indexed quote %s to index %s, type %s\n", put.Id, put.Index, put.Type)
+}
+
+// BulkIndexQuotes bulk indexes quotes crawled
+func BulkIndexQuotes(ctx context.Context, es *elastic.Client, indexName string, quotes []crawler.Quote) {
+	bulk := es.Bulk()
+	for i, quote := range quotes {
+		idStr := strconv.Itoa(i)
+		req := elastic.NewBulkIndexRequest()
+		req.OpType("index")
+		req.Index(indexName)
+		req.Id(idStr)
+		req.Doc(quote)
+		bulk = bulk.Add(req)
+	}
+	bulkResp, err := bulk.Do(ctx)
+
+	if err != nil {
+		log.Fatalf("bulk.Do(ctx) ERROR: %s", err)
+	} else {
+		indexed := bulkResp.Indexed()
+		fmt.Println("nbulkResp.Indexed():", indexed)
+	}
 }
