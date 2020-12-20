@@ -2,12 +2,13 @@ package esutil
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"search_engine/crawler"
 	"strconv"
 
-	"github.com/olivere/elastic"
+	"github.com/olivere/elastic/v7"
 )
 
 // CreateClient provides es client
@@ -79,4 +80,48 @@ func BulkIndexQuotes(ctx context.Context, es *elastic.Client, indexName string, 
 		indexed := bulkResp.Indexed()
 		fmt.Println("nbulkResp.Indexed():", indexed)
 	}
+}
+
+// SearchIndex for our queries
+func SearchIndex(ctx context.Context, es *elastic.Client, indexName string, query string) {
+	var searchResult *elastic.SearchResult
+	var err error
+
+	highlight := elastic.NewHighlight().Field("content").NumOfFragments(5).FragmentSize(25)
+	highlight = elastic.NewHighlight().Field("author").NumOfFragments(0)
+	highlight = highlight.PreTags("<span>").PostTags("</span>")
+
+	searchResult, err = es.Search().
+		Index(indexName).
+		Highlight(highlight).
+		Query(elastic.RawStringQuery(query)).
+		SortBy(elastic.NewFieldSort("_doc"), elastic.NewFieldSort("_score").Desc()).
+		From(0).Size(50).
+		Pretty(true).
+		Do(ctx)
+
+	if err != nil {
+		panic(err)
+	} else {
+		fmt.Println(searchResult.TookInMillis)
+		fmt.Println(searchResult.Hits.TotalHits)
+
+		var quotes []crawler.Quote
+		for _, hit := range searchResult.Hits.Hits {
+			var quote crawler.Quote
+			err := json.Unmarshal(hit.Source, &quote)
+			if err != nil {
+				fmt.Println("[Getting Quotes [Unmarshal] Err=", err)
+			}
+			quotes = append(quotes, quote)
+		}
+		if err != nil {
+			fmt.Println("Fetching quote fail: ", err)
+		} else {
+			for _, q := range quotes {
+				fmt.Printf("%s, %s\n", q.Content, q.Author)
+			}
+		}
+	}
+
 }

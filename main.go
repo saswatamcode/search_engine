@@ -1,7 +1,7 @@
 package main
 
 import (
-	"search_engine/crawler"
+	"fmt"
 	"search_engine/esutil"
 )
 
@@ -63,11 +63,24 @@ const mapping = `
 
 const name = "quotes"
 
+const query = `{
+        "match_all": {}
+	}`
+
+const query2 = `{
+"multi_match" : {
+	"query" : %q,
+	"fields" : ["author^100", "content^100"],
+	"operator" : "and"
+	}
+}`
+
 func main() {
-	quotes := crawler.Run(50)
+	// quotes := crawler.Run(50)
 
 	client, ctx := esutil.CreateClient()
-	esutil.CreateIndex(ctx, client, name, mapping)
+	esutil.SearchIndex(ctx, client, "quotes_index", fmt.Sprintf(query2, "books"))
+	// esutil.CreateIndex(ctx, client, name, mapping)
 
-	esutil.BulkIndexQuotes(ctx, client, "quotes_index", quotes)
+	// esutil.BulkIndexQuotes(ctx, client, "quotes_index", quotes)
 }
