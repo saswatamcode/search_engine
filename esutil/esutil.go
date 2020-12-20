@@ -24,7 +24,7 @@ func CreateClient() (*elastic.Client, context.Context) {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("Elasticsearch returned with code %d and version %s\n", code, info.Version.Number)
+	fmt.Printf("\nElasticsearch returned with code %d and version %s\n", code, info.Version.Number)
 
 	return client, ctx
 }
@@ -78,7 +78,7 @@ func BulkIndexQuotes(ctx context.Context, es *elastic.Client, indexName string, 
 		log.Fatalf("bulk.Do(ctx) ERROR: %s", err)
 	} else {
 		indexed := bulkResp.Indexed()
-		fmt.Println("nbulkResp.Indexed():", indexed)
+		fmt.Println("bulkResp.Indexed():", indexed)
 	}
 }
 

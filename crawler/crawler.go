@@ -31,6 +31,9 @@ func Run(amount int) []Quote {
 	)
 
 	c.OnHTML(".quoteDetails", func(e *colly.HTMLElement) {
+		if len(quotes) >= amount {
+			return
+		}
 		res := contentRegexp.FindAllStringSubmatch(e.ChildText("div.quoteText"), -1)
 		if len(res) < 1 {
 			return
@@ -51,7 +54,7 @@ func Run(amount int) []Quote {
 		}
 	})
 
-	fmt.Println("Launching Scraper !")
+	fmt.Println("Launching Crawler...")
 	c.Visit(searchString)
 	return quotes
 }

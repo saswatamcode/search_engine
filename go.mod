@@ -14,4 +14,5 @@ require (
 	github.com/saintfish/chardet v0.0.0-20120816061221-3af4cd4741ca // indirect
 	github.com/spf13/cobra v1.1.1
 	github.com/temoto/robotstxt v1.1.1 // indirect
+	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
 )
