@@ -11,6 +11,8 @@ import (
 	"github.com/olivere/elastic/v7"
 )
 
+var elasticSearchURL string = "http://127.0.0.1:9200"
+
 // CreateClient provides es client
 func CreateClient() (*elastic.Client, context.Context) {
 	ctx := context.Background()
@@ -20,7 +22,7 @@ func CreateClient() (*elastic.Client, context.Context) {
 		panic(err)
 	}
 
-	info, code, err := client.Ping("http://127.0.0.1:9200").Do(ctx)
+	info, code, err := client.Ping(elasticSearchURL).Do(ctx)
 	if err != nil {
 		panic(err)
 	}
@@ -64,7 +66,7 @@ func IndexQuote(ctx context.Context, es *elastic.Client, indexName string, typeN
 func BulkIndexQuotes(ctx context.Context, es *elastic.Client, indexName string, quotes []crawler.Quote) {
 	bulk := es.Bulk()
 	for i, quote := range quotes {
-		idStr := strconv.Itoa(i)
+		idStr := strconv.Itoa(i + 1)
 		req := elastic.NewBulkIndexRequest()
 		req.OpType("index")
 		req.Index(indexName)
@@ -118,11 +120,14 @@ func SearchIndex(ctx context.Context, es *elastic.Client, indexName string, quer
 		if err != nil {
 			fmt.Println("Fetching quote fail: ", err)
 		} else {
-			fmt.Println("\nYour search results are: ")
-			for _, q := range quotes {
-				fmt.Printf("%s, %s\n", q.Content, q.Author)
+			if len(quotes) > 0 {
+				fmt.Println("\nYour search results are: ")
+				for _, q := range quotes {
+					fmt.Printf("%s, %s\n", q.Content, q.Author)
+				}
+			} else {
+				fmt.Println("You have no matching quotes. Try indexing more quotes!")
 			}
 		}
 	}
-
 }

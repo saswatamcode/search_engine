@@ -15,11 +15,9 @@ var (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "quotes",
-	Short: "Quotes allows you to index and search quotes from goodreads.com!",
-	Long: `Quotes allows you to index and search quotes from goodreads.com!
-	index: Indexes quote from goodread.com 
-	`,
+	Use:   "searchQuotes",
+	Short: "SearchQuotes allows you to index and search quotes from goodreads.com!",
+	Long:  "SearchQuotes allows you to index and search quotes from goodreads.com! This is CLI application for demonstrating the utility of Elasticsearch.",
 }
 
 func init() {

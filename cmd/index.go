@@ -15,7 +15,7 @@ var (
 
 func init() {
 	rootCmd.AddCommand(indexCmd)
-	indexCmd.Flags().IntVarP(&maxQuotes, "maxQuotes", "q", 60, "Maximum number of quotes to be indexed")
+	indexCmd.Flags().IntVarP(&maxQuotes, "maxQuotes", "q", 100, "Maximum number of quotes to be indexed")
 	indexCmd.Flags().BoolVarP(&indexSetup, "setup", "s", true, "Create Elasticsearch index")
 }
 
