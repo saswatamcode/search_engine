@@ -103,8 +103,8 @@ func SearchIndex(ctx context.Context, es *elastic.Client, indexName string, quer
 	if err != nil {
 		panic(err)
 	} else {
-		fmt.Println(searchResult.TookInMillis)
-		fmt.Println(searchResult.Hits.TotalHits)
+		fmt.Printf("\nSearch took %d milliseconds!", searchResult.TookInMillis)
+		fmt.Printf("\nFound %d quotes!\n", searchResult.Hits.TotalHits.Value)
 
 		var quotes []crawler.Quote
 		for _, hit := range searchResult.Hits.Hits {
@@ -118,6 +118,7 @@ func SearchIndex(ctx context.Context, es *elastic.Client, indexName string, quer
 		if err != nil {
 			fmt.Println("Fetching quote fail: ", err)
 		} else {
+			fmt.Println("\nYour search results are: ")
 			for _, q := range quotes {
 				fmt.Printf("%s, %s\n", q.Content, q.Author)
 			}
