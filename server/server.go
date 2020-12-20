@@ -16,7 +16,7 @@ type response struct {
 }
 
 type searchReq struct {
-	Query string `json:"string"`
+	Query string `json:"query"`
 }
 
 func search(w http.ResponseWriter, r *http.Request) {
@@ -41,6 +41,7 @@ func search(w http.ResponseWriter, r *http.Request) {
 		_ = json.NewDecoder(r.Body).Decode(&req)
 
 		searchRes, err := esutil.SearchIndex(ctx, client, indexName, fmt.Sprintf(esutil.SearchQuery, req.Query))
+		log.Info(fmt.Sprintf(esutil.SearchQuery, req.Query))
 		if err != nil {
 			log.WithFields(log.Fields{
 				"Error": err,

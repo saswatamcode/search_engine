@@ -107,7 +107,7 @@ func SearchIndex(ctx context.Context, es *elastic.Client, indexName string, quer
 		Highlight(highlight).
 		Query(elastic.RawStringQuery(query)).
 		SortBy(elastic.NewFieldSort("_doc"), elastic.NewFieldSort("_score").Desc()).
-		From(0).Size(50).
+		From(0).Size(100).
 		Pretty(true).
 		Do(ctx)
 	if err != nil {
