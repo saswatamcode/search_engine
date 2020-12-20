@@ -7,8 +7,8 @@ interface QuoteListProps {
 const QuotesList: React.FC<QuoteListProps> = ({ quotes }) => {
   return (
     <>
-      {quotes.map((quote) => (
-        <QuoteItem quote={quote} />
+      {quotes.map((quote, index) => (
+        <QuoteItem key={index} quote={quote} />
       ))}
     </>
   );
