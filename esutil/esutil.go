@@ -11,6 +11,13 @@ import (
 	"github.com/olivere/elastic/v7"
 )
 
+//SearchRes is the search result we need
+type SearchRes struct {
+	Milliseconds int64           `json:"milliseconds"`
+	TotalHit     int64           `json:"totalHits"`
+	Quotes       []crawler.Quote `json:"quotes"`
+}
+
 var elasticSearchURL string = "http://127.0.0.1:9200"
 
 // CreateClient provides es client
@@ -85,9 +92,11 @@ func BulkIndexQuotes(ctx context.Context, es *elastic.Client, indexName string, 
 }
 
 // SearchIndex for our queries
-func SearchIndex(ctx context.Context, es *elastic.Client, indexName string, query string) {
+func SearchIndex(ctx context.Context, es *elastic.Client, indexName string, query string) (SearchRes, error) {
 	var searchResult *elastic.SearchResult
 	var err error
+
+	var result SearchRes
 
 	highlight := elastic.NewHighlight().Field("content").NumOfFragments(5).FragmentSize(25)
 	highlight = elastic.NewHighlight().Field("author").NumOfFragments(0)
@@ -101,33 +110,35 @@ func SearchIndex(ctx context.Context, es *elastic.Client, indexName string, quer
 		From(0).Size(50).
 		Pretty(true).
 		Do(ctx)
-
 	if err != nil {
-		panic(err)
-	} else {
-		fmt.Printf("\nSearch took %d milliseconds!", searchResult.TookInMillis)
-		fmt.Printf("\nFound %d quotes!\n", searchResult.Hits.TotalHits.Value)
-
-		var quotes []crawler.Quote
-		for _, hit := range searchResult.Hits.Hits {
-			var quote crawler.Quote
-			err := json.Unmarshal(hit.Source, &quote)
-			if err != nil {
-				fmt.Println("[Getting Quotes [Unmarshal] Err=", err)
-			}
-			quotes = append(quotes, quote)
-		}
-		if err != nil {
-			fmt.Println("Fetching quote fail: ", err)
-		} else {
-			if len(quotes) > 0 {
-				fmt.Println("\nYour search results are: ")
-				for _, q := range quotes {
-					fmt.Printf("%s, %s\n", q.Content, q.Author)
-				}
-			} else {
-				fmt.Println("You have no matching quotes. Try indexing more quotes!")
-			}
-		}
+		return result, err
 	}
+	fmt.Printf("\nSearch took %d milliseconds!", searchResult.TookInMillis)
+	fmt.Printf("\nFound %d quotes!\n", searchResult.Hits.TotalHits.Value)
+	result.Milliseconds = searchResult.TookInMillis
+	result.TotalHit = searchResult.Hits.TotalHits.Value
+
+	var quotes []crawler.Quote
+	for _, hit := range searchResult.Hits.Hits {
+		var quote crawler.Quote
+		err := json.Unmarshal(hit.Source, &quote)
+		if err != nil {
+			fmt.Println("[Getting Quotes [Unmarshal] Err=", err)
+		}
+		quotes = append(quotes, quote)
+	}
+	if err != nil {
+		fmt.Println("Fetching quote fail: ", err)
+		return result, err
+	}
+	if len(quotes) > 0 {
+		fmt.Println("\nYour search results are: ")
+		for _, q := range quotes {
+			fmt.Printf("%s, %s\n", q.Content, q.Author)
+		}
+		result.Quotes = quotes
+		return result, nil
+	}
+	fmt.Println("You have no matching quotes. Try indexing more quotes!")
+	return result, nil
 }

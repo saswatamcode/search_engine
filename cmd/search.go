@@ -32,6 +32,9 @@ var searchCmd = &cobra.Command{
 			query = fmt.Sprintf(esutil.SearchQuery, strings.Join(args, " "))
 		}
 
-		esutil.SearchIndex(ctx, client, IndexName, query)
+		_, err := esutil.SearchIndex(ctx, client, IndexName, query)
+		if err != nil {
+			panic(err)
+		}
 	},
 }
